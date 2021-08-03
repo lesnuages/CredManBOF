@@ -2,7 +2,7 @@ alias CredMan {
 	local('$handle $data $args $2 $3');
 
     if(size(@_) != 3){
-        berror($1, "CredMan: not enough arguments,Usage: CredMan [encrypted backup file location][decrypted backup file location][user process id] ");
+        berror($1, "CredMan: not enough arguments,Usage: CredMan [encrypted backup file location][user process id] ");
         return;
     }
 
