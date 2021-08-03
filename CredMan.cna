@@ -1,8 +1,8 @@
 alias CredMan {
-	local('$handle $data $args $2 $3');
+	local('$handle $data $args $2');
 
     if(size(@_) != 3){
-        berror($1, "CredMan: not enough arguments,Usage: CredMan [encrypted backup file location][user process id] ");
+        berror($1, "CredMan: not enough arguments,Usage: CredMan [user process id] ");
         return;
     }
 
@@ -10,7 +10,7 @@ alias CredMan {
     $data   = readb($handle, -1);
     closef($handle)
 
-    $args = bof_pack($1,"Zi",$2,$3);
+    $args = bof_pack($1,"i",$2);
 
     btask($1, "Running CredMan");
 

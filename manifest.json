@@ -15,12 +15,6 @@
         ],
         "arguments": [
             {
-                "name": "dumpfile-path",
-                "desc": "Path to the encrypted dump file",
-                "type": "wstring",
-                "optional": false
-            },
-            {
                 "name": "pid",
                 "desc": "PID of a process started by the target user",
                 "type": "int",

