@@ -6,8 +6,8 @@
     "original_author": "jsecu",
     "repo_url": "https://github.com/lesnuages/CredManBOF",
     "help": "Dump credentials using the CredsBackupCredentials API",
-    "dependsOn": "coff-loader",
-    "entryPoint": "go",
+    "depends_on": "coff-loader",
+    "entrypoint": "go",
     "files": [
         {
             "os": "windows",
