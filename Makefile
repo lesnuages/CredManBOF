@@ -12,5 +12,4 @@ test:
 	$(CC_x86) CredMan.c -o $(BOFNAME).x86.exe
 
 clean:
-	rm $(BOFNAME).*.exe
 	rm *.o
