@@ -11,10 +11,13 @@
     "files": [
         {
             "os": "windows",
-            "files": {
-                "x86": "credman.x86.o",
-                "x64": "credman.x64.o"
-            }
+            "arch": "amd64",
+            "path": "nanodump.x64.o"
+        },
+        {
+            "os": "windows",
+            "arch": "386",
+            "path": "nanodump.x86.o"
         }
     ],
     "arguments": [
