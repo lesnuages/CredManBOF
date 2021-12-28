@@ -13,3 +13,4 @@ test:
 
 clean:
 	rm $(BOFNAME).*.exe
+	rm *.o
