@@ -38,7 +38,7 @@ jobs:
           mkdir artifacts
           VERSION=$(git describe --tags --abbrev=0)
           cat extension.json | jq ".version |= \"$VERSION\"" > ./artifacts/extension.json
-          cp LICENSE.txt ./artifacts/LICENSE
+          cp LICENSE ./artifacts/LICENSE
           mv *.o ./artifacts/
           cd artifacts
           tar -czvf ../credman.tar.gz .
