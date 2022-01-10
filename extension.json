@@ -12,12 +12,12 @@
         {
             "os": "windows",
             "arch": "amd64",
-            "path": "nanodump.x64.o"
+            "path": "credman.x64.o"
         },
         {
             "os": "windows",
             "arch": "386",
-            "path": "nanodump.x86.o"
+            "path": "credman.x86.o"
         }
     ],
     "arguments": [
