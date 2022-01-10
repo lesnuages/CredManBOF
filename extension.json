@@ -4,7 +4,7 @@
     "command_name": "credman",
     "extension_author": "lesnuages",
     "original_author": "jsecu",
-    "repo_url": "https://github.com/lesnuages/CredManBOF",
+    "repo_url": "https://github.com/sliverarmory/CredManBOF",
     "help": "Dump credentials using the CredsBackupCredentials API",
     "depends_on": "coff-loader",
     "entrypoint": "go",
